@@ -1,4 +1,6 @@
-import { observable, computed } from 'mobx'
+import { observable, computed, action } from 'mobx'
+import User from './User';
+import Room from './Room';
 
 class State {
     @observable user = null;
@@ -7,6 +9,29 @@ class State {
     @observable roomFixed = false;
     @computed get activeRoom() {
         return this.activeRoomId && this.rooms.find(room => room.id == this.activeRoomId);
+    }
+
+    @action setUser = (userData = {}) => {
+        this.user = new User(userData);
+    }
+
+    @action setRooms = (roomsData = []) => {
+        this.rooms = roomsData.map(roomData => new Room(roomData));
+    }
+
+    @action setActiveRoomId = (id) => {
+        this.activeRoomId = id;
+    }
+
+    @action updateActiveRoom = (roomData = {}) => {
+        if (!this.activeRoomId) return;
+
+        if (this.activeRoom) {
+            this.activeRoom.update(roomData);
+        } else {
+            this.rooms = [...this.rooms, new room(roomData)];
+        }
+
     }
 
     constructor({ activeRoomId = null} = {}) {

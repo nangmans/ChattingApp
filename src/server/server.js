@@ -27,9 +27,7 @@ const renderFullPage = html => {
   <html lang="utf-8">
     <head>
       <title>React/MobX boilerplate</title>
-      <script>
-        window.initialState= ${JSON.stringify(initialState)}
-      </script>
+      <link rel="stylesheet" href="/static/bundle.css"/>
     </head>
     <body>
       <section id="app"><div>${html}</div></section>
@@ -46,7 +44,7 @@ app.use(logger('dev'));
 //Root
 app.get('/', function(req, res) {
   const initView = renderToString((
-    <App />
+    <App state={{}} />
   ));
   const page = renderFullPage(initView);
   res.status(200).send(page);

@@ -1,15 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Router, browserHistory} from 'react-router';
-import routes from './routes';
+import App from './components/App';
+import State from './core/State';
 
-const initialState = window.initialState || {};
+import './master.css';
+import 'semantic-ui-css/semantic.min.css';
+
+const activeRoomId = parseInt(location.pathname.substr(1)) || null;
+const state = new State({ activeRoomId });
 
 //initialize App-wide stores here, subscribe to them
 
 ReactDOM.render(
-  <Router history={browserHistory}>
-    {routes}
-  </Router>,
+  <App state={state} />,
   document.getElementById('app')
 );
