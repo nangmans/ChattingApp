@@ -32,7 +32,14 @@ module.exports = {
         test: /\.css$/,
         use: ExtractTextPlugin.extract({
           fallback: 'style-loader',
-          use: 'css-loader',
+          use: ['css-loader'],
+        })
+      },
+      {
+        test: /\.less$/,
+        use: ExtractTextPlugin.extract({
+          fallback: 'style-loader',
+          use: ['css-loader', 'less-loader'],
         })
       },
       {
@@ -40,10 +47,10 @@ module.exports = {
         loader: 'url-loader?limit=100000'
       },
       {
-      test: /\.jsx?$/,
-      loaders: ['babel-loader'],
-      exclude: /(node_modules)/,
-    },
-  ],
- }
+        test: /\.jsx?$/,
+        loaders: ['babel-loader'],
+        exclude: /(node_modules)/,
+      },
+    ],
+  }
 };

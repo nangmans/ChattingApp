@@ -1,77 +1,91 @@
 import React from 'react';
 import { observer } from 'mobx-react';
 import { avatarUrls } from '../core/data';
+import { Card, Header, Form, Button, Input, Image } from 'semantic-ui-react';
 
 @observer
 export default class Prompt extends React.Component {
-    state = { loading: false, avatarUrls: avatarUrls[0], nickname: null};
+  state = {
+    loading: false,
+    avatarUrl: avatarUrls[0],
+    nickname: null,
+  };
 
-    setAvatarUrl = (avatarUrl) => {
-        if (this.state.loading) return;
-        this.setState(state => ({...state, avatarUrl}))
-    }
+  setAvatarUrl = (avatarUrl) => {
+    if (this.state.loading) return;
+    this.setState(state => ({...state, avatarUrl}));
+    this.nicknameInputRef.focus();
+  }
 
-    setNickname = (nickname) => {
-        if (this.state.loading) return;
-        this.setState(state => ({...state, nickname}))
-    }
+  setNickname = (nickname) => {
+    if (this.state.loading) return;
+    this.setState(state => ({...state, nickname}));
+  }
 
-    submit = (e) => {
-        e.preventDefault();
+  submit = (e) => {
+    e.preventDefault();
 
-        const { avatarUrl, nickname, loading} = this.state;
-        if (loading) return;
+    const { avatarUrl, nickname, loading } = this.state;
+    if (loading || !nickname.trim()) return;
 
-        this.setState(state => ({...state,loding: true}))
+    this.setState(state => ({...state, loading: true }));
 
-        //TODO: login as and set this.props.state.user
-        setTimeout(() => {
-            this.props.setUser({ id: 9999, nickname, avatarUrl });
-          }, 500);
-    }
+    // TODO: login as and set this.props.state.user
+    this.props.login({ nickname, avatarUrl })
+  }
 
-    componenDidMount() {
-        this.nicknameInputRef.focus();
-    }
+  componentDidMount() {
+    this.setState(state => ({...state, nickname: parseInt((new Date).getTime()).toString().substr(-4)+'애용'}))
+    this.nicknameInputRef.focus();
+  }
 
-    render() {
-        return (
-            <div className='chat-prompt'>
-                <h1>PROMPT</h1>
-                <form onSubmit={this.login}>
-                    <div>
-                        <input
-                          ref ={ref => this.nicknameInputRef = ref}
-                          type ='text'
-                          value={this.state.nickname}
-                          placeholder='이름'
-                          onChange={(e) => this.setNickname(e.target.value)}
+  render() {
+    return (
+      <Card fluid raised>
+        <Card.Content
+          header={
+            <Header content='채팅방에 오신 것을 환영한다옹.' icon='comments' />
+          }
+          description={
+            <div className='flex-vert'>
+              <Form
+                loading={this.state.loading}
+                onSubmit={this.login}
+                className='flex-top'
+              >
+                <Form.Field>
+                  <ul className='avatar-selector'>
+                    {avatarUrls.map((avatarUrl, key) => (
+                      <li key={key} className={this.state.avatarUrl == avatarUrl ? 'active' : null}>
+                        <Image
+                          circular
+                          src={avatarUrl}
+                          onClick={() => this.setAvatarUrl(avatarUrl)}
                         />
-                    </div>
-                    <div>
-                        <ul>
-                            {avatarUrls.map((avatarUrl, key) => (
-                                <li key={key}>
-                                    <img
-                                      src={avatarUrl}
-                                      width={this.state.avatarUrl == avatarUrl ? 80 : 40}
-                                      onClick={() => this.setAvatarUrl(avatarUrl)}
-                                    />
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                    <div>
-                        <input
-                          type='submit'
-                          onClick={this.submit}
-                          value='입장하기'
-                          disabled={this.state.loading}
-                        />
-                    </div>
-                </form>
+                      </li>
+                    ))}
+                  </ul>
+                </Form.Field>
+                <Form.Field>
+                  <Input
+                    ref={ref => this.nicknameInputRef = ref}
+                    type='text'
+                    placeholder='이름을 입력하세요.'
+                    value={this.state.nickname}
+                    onChange={(e) => this.setNickname(e.target.value)}
+                  />
+                </Form.Field>
+                <Button
+                  fluid
+                  color='blue'
+                  size='large'
+                  onClick={this.submit}
+                >입장하기</Button>
+              </Form>
             </div>
-        )
-    }
-
+          }
+        />
+      </Card>
+    )
+  }
 }

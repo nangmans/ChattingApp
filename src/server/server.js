@@ -21,13 +21,13 @@ app.use(webpackDevMiddleware(compiler, { noInfo: true, publicPath: config.output
 app.use(webpackHotMiddleware(compiler));
 
 const renderFullPage = html => {
-  const initialState = {};
   return `
   <!doctype html>
   <html lang="utf-8">
     <head>
-      <title>React/MobX boilerplate</title>
-      <link rel="stylesheet" href="/static/bundle.css"/>
+      <title>Codeflow Chat</title>
+      <link rel="stylesheet" href="/static/bundle.css" />
+      <meta name="viewport" content="width=device-width, user-scalable=no">
     </head>
     <body>
       <section id="app"><div>${html}</div></section>
@@ -42,17 +42,14 @@ app.use(bodyParser.json());
 app.use(logger('dev'));
 
 //Root
-app.get('/', function(req, res) {
+app.get('*', function(req, res) {
   const initView = renderToString((
-    <App state={{}} />
+    <App state={{}} socket={{}} />
   ));
   const page = renderFullPage(initView);
   res.status(200).send(page);
 })
-//404 handler
-app.get('*', function(req, res) {
-  res.status(404).send('404 not found.')
-});
+
 //global error catcher
 app.use((err, req, res, next) => {
   console.error("Error on request %s %s", req.method, req.url);
@@ -64,7 +61,25 @@ process.on('uncaughtException', evt => {
   console.log('uncaughtException: ', evt);
 });
 
-app.listen(3000, function(){
-  console.log('Listening on port 3000');
+// Attach ws server and listen
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
+const port = process.env.PORT || 3000;
+
+server.listen(port, function(){
+  console.log('Listening on port ' + port);
 });
 
+if (process.env.NODE_ENV != 'production') {
+  const fs = require('fs');
+  io.on('connection', function(...args) {
+    // Dynamically reload socket handler for fast deveolpment environment
+    // Invalidate all cached module in current directory
+    fs.readdirSync(__dirname).forEach(file => {
+      delete require.cache[require.resolve(`./${file}`)];
+    });
+    return require('./socket').default(io).apply(null, args);
+  });
+} else {
+  io.on('connection', require('./socket').default(io));
+}
